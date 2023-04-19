@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+
+    <!--    导入vue-->
+    <script src="/res/js/vue.js" type="text/javascript"></script>
+    <!--导入element-ui组件-->
+    <script src="/res/js/index.js" type="text/javascript"></script>
+    <link href="/res/css/index.css" rel="stylesheet"/>
+
+    <script src="/res/js/jquery.min.js" type="text/javascript"></script>
+
+</head>
+<style>
+    body{
+        /*设置背景颜色*/
+        background-color: #72767b;
+        /*设置背景图片*/
+        background-image: url("/res/images/3.jpg");
+
+    }
+    .el-card{
+        width: 380px;
+        height: 580px;
+        margin: 0 auto;
+
+        margin-top: 50px;
+        background-color: rgba(255,255,255,0.5);
+        border: 0px;
+        border-radius: 20px;
+    }
+    .code_input{
+        width: 65%;
+    }
+    .el-input__inner{
+        border-radius: 11px;
+    }
+    .register_button{
+        margin-left: 35%;
+    }
+</style>
+<body>
+<div id="register">
+    <el-card class="box-card">
+        <div slot="header" class="clearfix">
+            <div style="text-align: center;font-size: 30px;font-weight:bold">注册</div>
+        </div>
+        <!--        :rules="formRules"--》;给表单绑定规则-->
+        <el-form id="form" :rules="formRules" ref="user" :model="user">
+            <!--            账号-->
+            <el-form-item prop="userName">
+                <el-input type="text" placeholder="请输入账号" v-model="user.userName"></el-input>
+            </el-form-item>
+            <!--            邮箱-->
+            <el-form-item prop="userEmail">
+                <el-input type="text" placeholder="请输入邮箱" v-model="user.userEmail"></el-input>
+            </el-form-item>
+            <!--            出生日期-->
+            <el-form-item prop="userBirth">
+                请选择你的出生日期
+                <el-input type="date" v-model="user.userBirth"></el-input>
+            </el-form-item>
+            <!--            密码-->
+            <el-form-item prop="userPassword">
+                <el-input type="password" placeholder="请输入密码" v-model="user.userPassword" show-password></el-input>
+            </el-form-item>
+            <!--            二次密码-->
+            <el-form-item prop="rePassword">
+                <el-input type="password" placeholder="请再次输入密码" v-model="user.rePassword" show-password></el-input>
+            </el-form-item>
+            <!--            验证码-->
+            <el-form-item>
+                <el-button type="primary" @click="sendEmail" :disabled="buttonStatus">{{buttonName}}</el-button>
+                <el-input type="text" placeholder="请输入验证码" class="code_input" v-model="user.checkCode"></el-input>
+            </el-form-item>
+            <!--            注册按钮-->
+            <el-button type="success" plain class="register_button" @click="register" round >注册</el-button>
+        </el-form>
+    </el-card>
+</div>
+<script>
+    new Vue({
+        el:"#register",
+        data(){
+            //给rePassword自定义一个规则
+            var passCheck=(rule,value,callback)=>{
+                if(value===""){
+                    callback(new Error("请再一次输入密码！"))
+                }else if(value!=this.user.userPassword){
+                    callback(new Error("两次密码输入不一致！"))
+                }else {
+                    callback();
+                }
+            }
+            return{
+                //按钮的状态:开始不禁用为false
+                buttonStatus: false,
+                //验证码按钮名称
+                buttonName: "发送验证码",
+                user:{
+                    userName:"",
+                    userPassword:"",
+                    userEmail:"",
+                    userBirth:"",
+                    //验证码
+                    checkCode:"",
+                    //再次输入密码
+                    rePassword:""
+                },
+                formRules:{
+                    userName: [
+                        {required:true,message:"账号不能为空",trigger:"blur"}
+                    ],
+                    userEmail: [
+                        {required:true,message:"邮箱不能为空",trigger:"blur"}
+                    ],
+                    userBirth: [
+                        {required:true,message:"出生日期不能为空",trigger:"blur"}
+                    ],
+                    userPassword: [
+                        {required:true,message:"密码不能为空",trigger:"blur"}
+                    ],
+                    rePassword: [
+                        {required:true,trigger:"blur",validator:passCheck}//passCheck->自定义规则
+                    ]
+                }
+
+            }
+        },
+        methods: {
+            //表单检验  检验表单是否成功
+            register_check() {
+                //声明一个返回值,用来返回该表单是否成功
+                var result;
+                this.$refs['user'].validate((valid) => {
+                    if (valid){
+                        result = true;
+                    }else {
+                        result = false;
+                    }
+                })
+                return result;
+
+            },
+            //注册按钮触发函数
+            register() {
+                var type=this.register_check();
+                if (type) {
+                    alert("成功！");
+                } else {
+                    alert("失败！")
+                }
+            },
+            sendEmail() {
+
+                var _this=this;
+                var type = _this.register_check();
+                if (type === false) {
+                    return
+                }
+                //请求发送邮箱接口
+                $.ajax({
+                    url:"/user/sendCode",
+                    type:"get",
+                    dataType:"JSON",//表示接收后端传来的JSON格式数据
+                    data:{
+                        "userName":_this.user.userName,
+                        "userPassword":_this.user.userPassword,
+                        "userEmail":_this.user.userEmail,
+                        "userBirth":_this.user.userBirth
+                    },
+                    success: function (response) {
+                        //弹框提示
+                        _this.$message({
+                            type:response.code===200?"success":"error",
+                            message:response.msg
+                        })
+                        //请求成功，禁用按钮，倒计时开始
+                        if (response.code === 200) {
+                            //禁用按钮
+                            _this.buttonStatus = true;
+                            _this.times();
+                        }
+
+                    }
+
+                })
+
+            },
+            //计时
+            times() {
+                var _this = this;
+                //设置倒计时时间
+                var count = 30;
+                //每间隔1S 执行count--->直到count=0为止
+                var time=setInterval(()=>{
+                    _this.buttonName = count + "s";
+                    count--;
+                    if (count < 0) {
+                        //清除计时
+                        clearInterval(time);
+                        //修改按钮名称
+                        _this.buttonName = "再次发送";
+                        //修改按钮状态
+                        _this.buttonStatus = false;
+                    }
+                },1000)//每隔1s  执行一次代码
+            }
+        }
+    })
+
+</script>
+</body>
+</html>

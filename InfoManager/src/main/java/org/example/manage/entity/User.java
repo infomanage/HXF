@@ -1,6 +1,7 @@
 package org.example.manage.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,7 @@ import java.util.Date;
 @NoArgsConstructor//无参构造
 public class User {
     @TableId(type = IdType.AUTO)//表示id是主键 且自增
-    private Integer id;
+    private Integer user_id;
 
     private String userName;
 
@@ -30,4 +31,7 @@ public class User {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")//处理前端接收的
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")//处理后端接收的
     private Date userTime;
+
+    @TableField(exist = false) //表示表中没有check_code这个字段
+    private String checkCode;
 }

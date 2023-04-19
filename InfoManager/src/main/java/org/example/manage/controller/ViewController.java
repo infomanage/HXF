@@ -9,7 +9,7 @@ public class ViewController {
     public String test() {
         return "test";//  "/templates/"+test+".html"
     }
-    @RequestMapping("/register")//路径：localhost:8081/register
+    @RequestMapping("/register")//路径：localhost:8082/register
     public String register() {
         return "register";
     }
