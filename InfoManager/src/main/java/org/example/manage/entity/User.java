@@ -16,7 +16,7 @@ import java.util.Date;
 @NoArgsConstructor//无参构造
 public class User {
     @TableId(type = IdType.AUTO)//表示id是主键 且自增
-    private Integer user_id;
+    private Integer userId;
 
     private String userName;
 

@@ -14,4 +14,9 @@ public class ViewController {
         return "register";
     }
 
+    @RequestMapping("/index")//路径：localhost:8082/index
+    public String index() {
+        return "index";
+    }
+    
 }

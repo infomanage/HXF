@@ -47,7 +47,7 @@ public class UserService {
         }
         boolean result = email.sendEmail(userEmail, "验证码", "你的验证码是:" + code);
         //将验证码存储到Redis中
-        redisTemplate.opsForValue().set("code", code, 10, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set("code", code, 60, TimeUnit.SECONDS);
 
         return result ? Result.ok("发送成功") : Result.error("发送失败");
     }
@@ -57,7 +57,7 @@ public class UserService {
 
             //1.判断验证码是否正确       转类型方法1：拼接.get("code")+
             String code = redisTemplate.opsForValue().get("code").toString();//从redis中取出验证码
-            if (user.getCheckCode().equals(code)) {
+            if (!user.getCheckCode().equals(code)) {
                 return Result.error("验证码输入错误！");
             }
 
